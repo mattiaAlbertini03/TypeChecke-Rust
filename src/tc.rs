@@ -26,7 +26,7 @@ impl<'t> ExportFile<'t> {
                 self.controllo_parametri(val, uparams);
             }
             let v = self.infer(val);
-            
+
             if !self.def_eq(ty, v){
                 println!("Errore nella dichiarazione {:?}: tipo della definizione non coincide. ty={:?}, val_type={:?}", name.idx, self.read_expr(ty), self.read_expr(v));
             }
@@ -258,15 +258,16 @@ impl<'t> ExportFile<'t> {
             match self.read_expr(expr) {
                 Sort {universe, ..} => return universe,
                 
-                
                 FreeVar {ty, ..} => e = ty,
                 
                 Const { name, universes, .. } => {
                     let d = self.read_declar(name);
                     e = self.subst_expr_universes(d.ty(), d.uparams(), universes);
                 }
+                
+                NatLit {..} | StrLit {..} => panic!("valore non Sort, {:?}", self.read_expr(expr)),
             
-                _ => panic!("valore non Sort, {:?}", self.read_expr(expr)),
+                _ => e = expr,
             }
        }
     }

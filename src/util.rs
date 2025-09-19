@@ -55,6 +55,14 @@ macro_rules! reader {
     };
 }
 
+macro_rules! reader_map {
+    ($fn_name:ident, $field:ident, $ptr:ty, $ret:ty) => {
+        pub fn $fn_name(&self, val: $ptr) -> $ret {
+            self.$field.get(&val).cloned().unwrap()
+        }
+    };
+}
+
 macro_rules! alloc {
     ($fn_name:ident, $field:ident, $ptr:ty, $ret:ty) => {
         pub fn $fn_name(&mut self, n: $ptr) -> $ret {
@@ -95,22 +103,15 @@ impl<'t> ExportFile<'t> {
     reader!(read_expr, exprs, ExprPtr<'t>, Expr<'t>);
     reader!(read_universe, universes, UniversePtr<'t>, Universe<'t>);
     reader!(read_uparams, uparams, UparamsPtr<'t>, Vec<UniversePtr<'t>>);
-
-    pub fn read_declar(&self, name: NamePtr<'t>) -> Declar<'t> {
-        self.declars.get(&name).cloned().unwrap()
-    }
-    pub fn read_infer(&self, e: ExprPtr<'t>) -> ExprPtr<'t> {
-        self.infers.get(&e).cloned().unwrap()
-    }
     
-    pub fn read_whnf(&self, e: ExprPtr<'t>) -> ExprPtr<'t> {
-        self.whnfs.get(&e).cloned().unwrap()
-    }
-                    
     pub fn read_expr_pair(&self, a: ExprPtr<'t>, b: ExprPtr<'t>) -> (Expr<'t>, Expr<'t>) {
         (self.read_expr(a), self.read_expr(b))
     }
 
+    reader_map!(read_declar, declars, NamePtr<'t>, Declar<'t>);
+    reader_map!(read_infer, infers, ExprPtr<'t>, ExprPtr<'t>);
+    reader_map!(read_whnf, whnfs, ExprPtr<'t>, ExprPtr<'t>);
+    
     alloc!(alloc_name, names, Name<'t>, NamePtr<'t>);
     alloc!(alloc_expr, exprs, Expr<'t>, ExprPtr<'t>);
     alloc!(alloc_universe, universes, Universe<'t>, UniversePtr<'t>);
